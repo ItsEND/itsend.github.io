@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доступные веб-компоненты</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+        }
+        x-header-paragraph {
+            display: block;
+            margin: 10px 0;
+        }
+        div[role="region"] {
+            margin: 10px 0;
+            border: 1px solid silver;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f9f9f9; /* Увеличение контраста */
+        }
+        div[role="region"]:focus {
+            outline: 2px solid #005fcc; /* Добавление визуального фокуса */
+        }
+    </style>
+</head>
+<body>
+    <article>
+        <h1>Пример веб-компонентов</h1>
+        <x-header-paragraph title="Заголовок 1" text="Это первый абзац текста."></x-header-paragraph>
+        <x-header-paragraph title="Заголовок 2" text="Это второй абзац текста."></x-header-paragraph>
+        <x-header-paragraph title="Заголовок 3" text="Это третий абзац текста."></x-header-paragraph>
+    </article>
+
+    <script>
+        class HeaderParagraph extends HTMLElement {
+            constructor() {
+                super();
+                this.attachShadow({ mode: 'open' });
+                this.title = this.getAttribute('title');
+                this.text = this.getAttribute('text');
+
+                const container = document.createElement('div');
+                container.setAttribute('role', 'region');
+                container.setAttribute('aria-labelledby', 'header');
+                container.setAttribute('aria-describedby', 'content');
+                container.setAttribute('tabindex', '0');
+
+                const header = document.createElement('h2');
+                header.id = 'header';
+                header.textContent = this.title;
+
+                const paragraph = document.createElement('p');
+                paragraph.id = 'content';
+                paragraph.textContent = this.text;
+
+                container.appendChild(header);
+                container.appendChild(paragraph);
+                this.shadowRoot.appendChild(container);
+
+                // Речь при фокусе
+                container.addEventListener('focus', () => {
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(`${this.title}. ${this.text}`);
+                    window.speechSynthesis.speak(utterance);
+                });
+
+                // Речь при нажатии Enter
+                container.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter') {
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(`${this.title}. ${this.text}`);
+                        window.speechSynthesis.speak(utterance);
+                    }
+                });
+            }
+        }
+
+        customElements.define('x-header-paragraph', HeaderParagraph);
+    </script>
+</body>
+</html>
